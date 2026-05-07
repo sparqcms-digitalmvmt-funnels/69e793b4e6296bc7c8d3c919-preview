@@ -614,7 +614,7 @@ async function createOrderViaWallet(confirmationToken, paymentMethodId) {
         ?.getAttribute("data-shipping-profile-id") || undefined;
 
   const orderData = {
-    pageId: "U3CViCG9XynUE8XwiaO-iHfakRx2pNAti4X38WAQltajQCQLApNZY2o3YlPyXebo",
+    pageId: "vEqDfGl00UnmVnEjeDWTe8u6qrGPaPuRcdSLQ8Y1yoiaOtMQLXQkzWmaYc6bOUP3",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
@@ -1223,15 +1223,19 @@ let formEl, generalError;
 
 const removeQuantityFromName = (name) => name.replace(/^\d+x\s*/i, "");
 
-async function getClientIP() {
+// Pre-fetch IP on page load so it's ready when the checkout button is clicked.
+const clientIPPromise = (async () => {
   try {
     const response = await fetch("https://api.ipify.org?format=json");
     const data = await response.json();
     return data.ip;
-  } catch (error) {
-    console.error("Error fetching IP:", error);
+  } catch {
     return "0.0.0.0";
   }
+})();
+
+async function getClientIP() {
+  return clientIPPromise;
 }
 
 function getDataFromSessionStorage() {
@@ -1410,7 +1414,7 @@ async function createOrderViaPaypal(isExpress = false) {
   const shippingProfileId = +document.querySelector(`[data-product-id="${selectedProduct.id}"]`)?.getAttribute('data-shipping-profile-id') || undefined;
   const sameAddress = isSameAddress();
   const orderData = {
-    pageId: "U3CViCG9XynUE8XwiaO-iHfakRx2pNAti4X38WAQltajQCQLApNZY2o3YlPyXebo",
+    pageId: "vEqDfGl00UnmVnEjeDWTe8u6qrGPaPuRcdSLQ8Y1yoiaOtMQLXQkzWmaYc6bOUP3",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -1710,7 +1714,7 @@ async function createOrderViaKlarna() {
   const sameAddress = isSameAddress();
 
   const orderData = {
-    pageId: "U3CViCG9XynUE8XwiaO-iHfakRx2pNAti4X38WAQltajQCQLApNZY2o3YlPyXebo",
+    pageId: "vEqDfGl00UnmVnEjeDWTe8u6qrGPaPuRcdSLQ8Y1yoiaOtMQLXQkzWmaYc6bOUP3",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
     email: email,
@@ -2089,7 +2093,7 @@ async function createOrderViaCreditCard() {
   let orderTotal = Math.max(0, Number(selectedProduct.price) * selectedProduct.quantity);
 
   const orderData = {
-    pageId: "U3CViCG9XynUE8XwiaO-iHfakRx2pNAti4X38WAQltajQCQLApNZY2o3YlPyXebo",
+    pageId: "vEqDfGl00UnmVnEjeDWTe8u6qrGPaPuRcdSLQ8Y1yoiaOtMQLXQkzWmaYc6bOUP3",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -3602,7 +3606,7 @@ if (typeof validateAndSendToKlaviyo === "function") {
       lastNameEl.value != "" &&
       /(?:[a-z0-9+!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i.test(emailEl.value)
     ) {
-      // sendLead();
+      sendLead();
     }
   });
 
@@ -4349,7 +4353,7 @@ async function returnPaypal() {
 ;
 
     const body = {
-        pageId: "U3CViCG9XynUE8XwiaO-iHfakRx2pNAti4X38WAQltajQCQLApNZY2o3YlPyXebo",
+        pageId: "vEqDfGl00UnmVnEjeDWTe8u6qrGPaPuRcdSLQ8Y1yoiaOtMQLXQkzWmaYc6bOUP3",
         action: "process",
         campaign_id: CAMPAIGN_ID,
         connection_id: 1,
