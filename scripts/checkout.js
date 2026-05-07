@@ -73,29 +73,6 @@ function getNextPageSlugForRedirect() {
   return "/";
 }
 
-// Pre-fetch the client IP on page load so it's ready when the checkout button is clicked.
-// Stored as a promise — awaiting it multiple times is safe and always resolves to the same value.
-const clientIPPromise = (async () => {
-  try {
-    const response = await fetch("https://api.ipify.org?format=json");
-    const data = await response.json();
-    return data.ip;
-  } catch {
-    return "0.0.0.0";
-  }
-})();
-
-// Prefetch the next page so the browser can start loading it in the background.
-// By the time the order completes and we redirect, it will already be cached.
-
-(function() {
-  var link = document.createElement("link");
-  link.rel = "prefetch";
-  link.href = "/upsell";
-  document.head.appendChild(link);
-})();
-
-
 let isTest = sessionStorage.getItem("test");
 
 if (isTest === null) {
@@ -250,7 +227,6 @@ const i18n = {
     "systemErrorOffer": "There was a problem with this offer. Please contact support or try again later.",
     "systemErrorGeneric": "Something went wrong processing your order. Please try again or contact support if the problem persists.",
     "klarnaNotAvailableRecurring": "Klarna is not available for recurring products.",
-    "klarnaNotAvailable": "Klarna is not available.",
     "klarnaSubscriptionsNotSupported": "Subscriptions are not supported with Klarna",
     "klarnaOrderFailed": "Something went wrong creating the order, please try again",
     "klarnaProcessingFailed": "Something went wrong processing your order, please try again",
@@ -368,28 +344,6 @@ const getPrices = () => {
 };
 
 const SUPPORTED_ADDRESS_COUNTRIES = [{"name":"United States of America","iso_2":"US"},{"name":"Canada","iso_2":"CA"},{"name":"United Kingdom","iso_2":"GB"},{"name":"Australia","iso_2":"AU"},{"name":"Germany","iso_2":"DE"},{"name":"France","iso_2":"FR"},{"name":"Spain","iso_2":"ES"},{"name":"Italy","iso_2":"IT"}];
-
-const mergeWithSupportedAddressCountries = (rawCountries = []) => {
-  const mergedCountries = new Map();
-
-  (Array.isArray(rawCountries) ? rawCountries : []).forEach((country) => {
-    const iso2 = String(country?.iso_2 || country?.code || country?.iso2 || "").toUpperCase();
-    if (!iso2) return;
-    mergedCountries.set(iso2, {
-      ...country,
-      iso_2: iso2,
-      name: country?.name || country?.countryName || iso2,
-    });
-  });
-
-  SUPPORTED_ADDRESS_COUNTRIES.forEach((country) => {
-    if (!mergedCountries.has(country.iso_2)) {
-      mergedCountries.set(country.iso_2, country);
-    }
-  });
-
-  return Array.from(mergedCountries.values());
-};
 
 const getCountries = () => {
   // Campaign countries are the source of truth
@@ -660,7 +614,7 @@ async function createOrderViaWallet(confirmationToken, paymentMethodId) {
         ?.getAttribute("data-shipping-profile-id") || undefined;
 
   const orderData = {
-    pageId: "GCAPKoLqJEhewbSSHEI-eUnZMsOMQnndDxUziy65gDyINKucVzGE9LC0NVn7QAZn",
+    pageId: "K5piCo-a9yaQLsYJ8Zw15TdMtEtg7_EoXRrtM5LkVRQ4hv483mMrkZXhOF-kh-c-",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
@@ -1270,7 +1224,14 @@ let formEl, generalError;
 const removeQuantityFromName = (name) => name.replace(/^\d+x\s*/i, "");
 
 async function getClientIP() {
-  return clientIPPromise;
+  try {
+    const response = await fetch("https://api.ipify.org?format=json");
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    console.error("Error fetching IP:", error);
+    return "0.0.0.0";
+  }
 }
 
 function getDataFromSessionStorage() {
@@ -1372,7 +1333,7 @@ function getInPurchaseUpsells() {
         };
       }
       const isInput = product.tagName.toLowerCase() === "input";
-      const input = product.querySelector("input");
+      const input = product.querySelector("input");    
       const isBundledInActiveCard =
         product.hasAttribute('data-bundled-upsell') &&
         !!product.closest(".product-card-active");
@@ -1449,7 +1410,7 @@ async function createOrderViaPaypal(isExpress = false) {
   const shippingProfileId = +document.querySelector(`[data-product-id="${selectedProduct.id}"]`)?.getAttribute('data-shipping-profile-id') || undefined;
   const sameAddress = isSameAddress();
   const orderData = {
-    pageId: "GCAPKoLqJEhewbSSHEI-eUnZMsOMQnndDxUziy65gDyINKucVzGE9LC0NVn7QAZn",
+    pageId: "K5piCo-a9yaQLsYJ8Zw15TdMtEtg7_EoXRrtM5LkVRQ4hv483mMrkZXhOF-kh-c-",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -1694,7 +1655,7 @@ async function createOrderViaPaypal(isExpress = false) {
 
 async function createOrderViaKlarna() {
   if (!isKlarnaEnabled) {
-    showError(i18n.errors.klarnaNotAvailable);
+    showError("Klarna is not available");
     return;
   }
 
@@ -1749,7 +1710,7 @@ async function createOrderViaKlarna() {
   const sameAddress = isSameAddress();
 
   const orderData = {
-    pageId: "GCAPKoLqJEhewbSSHEI-eUnZMsOMQnndDxUziy65gDyINKucVzGE9LC0NVn7QAZn",
+    pageId: "K5piCo-a9yaQLsYJ8Zw15TdMtEtg7_EoXRrtM5LkVRQ4hv483mMrkZXhOF-kh-c-",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
     email: email,
@@ -1874,7 +1835,6 @@ async function createOrderViaKlarna() {
   saveProductCustomData(selectedProductElement);
   let { product, quantity } =
     getBindedShippableProductAndQuantity(selectedProductElement) ?? {};
-    
   if (product) {
     const bindedOfferData = getVrioOfferInfoByProductId(product.id);
     if (!bindedOfferData?.isRecurringOffer) {
@@ -2129,7 +2089,7 @@ async function createOrderViaCreditCard() {
   let orderTotal = Math.max(0, Number(selectedProduct.price) * selectedProduct.quantity);
 
   const orderData = {
-    pageId: "GCAPKoLqJEhewbSSHEI-eUnZMsOMQnndDxUziy65gDyINKucVzGE9LC0NVn7QAZn",
+    pageId: "K5piCo-a9yaQLsYJ8Zw15TdMtEtg7_EoXRrtM5LkVRQ4hv483mMrkZXhOF-kh-c-",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -2396,8 +2356,6 @@ async function createOrderViaCreditCard() {
           }
           return;
         }
-
-        showPreloader(false);
 
         var msg = (result && result.error && result.error.message) || (result && result.message) || i18n.errors.creditCardOrderFailed;
         msg = humanizeCountryError(msg);
@@ -2697,7 +2655,7 @@ const getStates = async (countryIso2Code) => {
       (c) => String(c.code || c.iso_2 || c.iso2 || '').toUpperCase() === iso2
     );
     const states = (found && Array.isArray(found.states)) ? found.states : [];
-    return states.map(s => ({ iso2: s.code || s.iso_2 || s.abbr || s.name || s.label || '', name: s.name || s.label || '' }));    
+    return states.map(s => ({ iso2: s.iso2 || s.code || s.iso_2 || s.abbr || '', name: s.name || s.label || '' }));
   } catch (error) {
     console.error("Error getting states", error);
     return [];
@@ -2789,7 +2747,7 @@ const populateStates = async (stateSelector, countryIso2Code) => {
 
   states.forEach((state) => {
     const option = document.createElement("option");
-    option.value = state.iso2 || state.name || '';
+    option.value = state.iso2 || '';
     option.innerText = state.name;
     stateEl.appendChild(option);
   });
@@ -3644,7 +3602,7 @@ if (typeof validateAndSendToKlaviyo === "function") {
       lastNameEl.value != "" &&
       /(?:[a-z0-9+!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/i.test(emailEl.value)
     ) {
-      sendLead();
+      // sendLead();
     }
   });
 
@@ -4061,8 +4019,8 @@ await initializeFormValidation();
     cvvOverlay = document.createElement("div");
     cvvOverlay.id = "cvvOverlay";
     cvvOverlay.className = "cvvOverlay";
-    cvvOverlay.role = "dialog";
-    cvvOverlay.ariaModal = "true";
+    cvvOverlay.setAttribute("role", "dialog");
+    cvvOverlay.setAttribute("aria-modal", "true");
     const modalStyles = `
     <style>
       .cvvOverlay {
@@ -4391,7 +4349,7 @@ async function returnPaypal() {
 ;
 
     const body = {
-        pageId: "GCAPKoLqJEhewbSSHEI-eUnZMsOMQnndDxUziy65gDyINKucVzGE9LC0NVn7QAZn",
+        pageId: "K5piCo-a9yaQLsYJ8Zw15TdMtEtg7_EoXRrtM5LkVRQ4hv483mMrkZXhOF-kh-c-",
         action: "process",
         campaign_id: CAMPAIGN_ID,
         connection_id: 1,
@@ -4474,6 +4432,7 @@ async function returnPaypal() {
         offer_id: getVrioOfferIdByProductId(product.item_id) ?? DEFAULT_OFFER_ID,
         item_id: Number(product.item_id),
         order_offer_quantity: product.order_offer_quantity,
+        ...(product.mainOffer ? { mainOffer: true } : {}),
       });
     });
 
@@ -4949,17 +4908,17 @@ function handleFreeGiftParam(allProducts) {
       const currentUnitPrice = Number(currentProduct?.price || 0);
 
       if (currentProduct) {
-        if (shouldSkipRecurring && isRecurringByProductId(currentProduct.id)) {
-          // Skip recurring main product for Klarna
-        } else {
-        let quantity = Number(currentProduct.quantity || 1);
         const fullPriceNode = document.querySelector(
           `[data-product-card][data-product-id='${currentProduct.id}'] [data_product_full_price]`,
         );
         const fullPriceElement = fullPriceNode
           ? parseFloat(fullPriceNode.innerHTML.replaceAll(",", ".").replace(/[^0-9.,]+/g, '')) || 0
-          : currentUnitPrice * quantity;
+          : currentUnitPrice;
         hasItems = true;
+        if (shouldSkipRecurring && isRecurringByProductId(currentProduct.id)) {
+          // Skip recurring main product for Klarna
+        } else {
+        let quantity = Number(currentProduct.quantity || 1);
         const itemContainer = document.createElement('div');
         itemContainer.style.display = 'flex';
         itemContainer.style.justifyContent = 'space-between';
@@ -4989,7 +4948,7 @@ function handleFreeGiftParam(allProducts) {
 
         itemContainer.appendChild(itemDetails);
         itemContainer.appendChild(priceElement);
-        if (summaryList) summaryList.appendChild(itemContainer);
+        summaryList.appendChild(itemContainer);
 
         total += currentUnitPrice * quantity;
         subTotal += fullPriceElement;
@@ -5099,7 +5058,7 @@ function handleFreeGiftParam(allProducts) {
           subTotal += isGift ? 0 : product.finalPrice * productObject.quantity;
         }
       });
-      if (!hasItems && summaryList) {
+      if (!hasItems) {
         const noItemsMessage = document.createElement('div');
         noItemsMessage.textContent = '';
         noItemsMessage.style.textAlign = 'center';

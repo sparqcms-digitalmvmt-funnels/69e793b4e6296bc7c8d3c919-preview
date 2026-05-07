@@ -133,7 +133,6 @@ const i18n = {
     "systemErrorOffer": "There was a problem with this offer. Please contact support or try again later.",
     "systemErrorGeneric": "Something went wrong processing your order. Please try again or contact support if the problem persists.",
     "klarnaNotAvailableRecurring": "Klarna is not available for recurring products.",
-    "klarnaNotAvailable": "Klarna is not available.",
     "klarnaSubscriptionsNotSupported": "Subscriptions are not supported with Klarna",
     "klarnaOrderFailed": "Something went wrong creating the order, please try again",
     "klarnaProcessingFailed": "Something went wrong processing your order, please try again",
@@ -303,7 +302,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const endpoint =
     `orders?order_id=${orderids.join(",")}` +
-    `&with=order_offers,customer_address_billing,customer_address_shipping,customer,transactions,cart&pageId=r4Tl2HYRbYsQXRPnwNAcUOblIaOtGsR4JJZogy6N2L1kHbeM9G8Y41nFa7DpevsI`
+    `&with=order_offers,customer_address_billing,customer_address_shipping,customer,transactions,cart&pageId=m55No7SEtqnq6G7lz55bBIKMD2I2ei7H1XY1RkBWnsTsplF_8fNZY1yjeyeBxmjT`
 
   const response = await fetch(
     `http://localhost:5020/vrio/${endpoint}`,
