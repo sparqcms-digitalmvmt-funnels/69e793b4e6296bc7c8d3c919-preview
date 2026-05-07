@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const endpoint =
     `orders?order_id=${orderids.join(",")}` +
-    `&with=order_offers,customer_address_billing,customer_address_shipping,customer,transactions,cart&pageId=DGC-_nH898db3o6DDfpDAA2f4vwCDLO_KozyLwL7hojyg2WnQ3RvBJP4gfEoAwz1`
+    `&with=order_offers,customer_address_billing,customer_address_shipping,customer,transactions,cart&pageId=J-dyFZtsQYWehuh9gt-Q9IznMMaCGQw2rXFnEczo7QrLungCALu1_gV5IpXO_02y`
 
   const response = await fetch(
     `http://localhost:5020/vrio/${endpoint}`,

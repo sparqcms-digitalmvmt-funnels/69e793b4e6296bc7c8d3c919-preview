@@ -614,7 +614,7 @@ async function createOrderViaWallet(confirmationToken, paymentMethodId) {
         ?.getAttribute("data-shipping-profile-id") || undefined;
 
   const orderData = {
-    pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
+    pageId: "OIXV561Jhsai051ZYnGFwUYsl-6a8nnzSvc-dHeUk_mRev6aV3J181fh5ciZI6dz",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
@@ -1223,19 +1223,15 @@ let formEl, generalError;
 
 const removeQuantityFromName = (name) => name.replace(/^\d+x\s*/i, "");
 
-// Pre-fetch IP on page load so it's ready when the checkout button is clicked.
-const clientIPPromise = (async () => {
+async function getClientIP() {
   try {
     const response = await fetch("https://api.ipify.org?format=json");
     const data = await response.json();
     return data.ip;
-  } catch {
+  } catch (error) {
+    console.error("Error fetching IP:", error);
     return "0.0.0.0";
   }
-})();
-
-async function getClientIP() {
-  return clientIPPromise;
 }
 
 function getDataFromSessionStorage() {
@@ -1414,7 +1410,7 @@ async function createOrderViaPaypal(isExpress = false) {
   const shippingProfileId = +document.querySelector(`[data-product-id="${selectedProduct.id}"]`)?.getAttribute('data-shipping-profile-id') || undefined;
   const sameAddress = isSameAddress();
   const orderData = {
-    pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
+    pageId: "OIXV561Jhsai051ZYnGFwUYsl-6a8nnzSvc-dHeUk_mRev6aV3J181fh5ciZI6dz",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -1714,7 +1710,7 @@ async function createOrderViaKlarna() {
   const sameAddress = isSameAddress();
 
   const orderData = {
-    pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
+    pageId: "OIXV561Jhsai051ZYnGFwUYsl-6a8nnzSvc-dHeUk_mRev6aV3J181fh5ciZI6dz",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1,
     email: email,
@@ -2093,7 +2089,7 @@ async function createOrderViaCreditCard() {
   let orderTotal = Math.max(0, Number(selectedProduct.price) * selectedProduct.quantity);
 
   const orderData = {
-    pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
+    pageId: "OIXV561Jhsai051ZYnGFwUYsl-6a8nnzSvc-dHeUk_mRev6aV3J181fh5ciZI6dz",
     action: "process",
     campaign_id: CAMPAIGN_ID,
     connection_id: 1, // VRIO URL ending /connection
@@ -2843,22 +2839,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     if (isTest) console.error(error);
   }
-
-  // Pre-create the VRIO cart on page load so the token is ready when the user
-  // clicks Complete Checkout, skipping the ~2-4s createCart call at submit time.
-  // Uses only baked-in template variables — no user data, no side effects.
-  (async () => {
-    try {
-      if (!sessionStorage.getItem("cart_token")) {
-        await createCart({
-          offers: [{ offer_id: DEFAULT_OFFER_ID, order_offer_quantity: 1 }],
-          campaign_id: CAMPAIGN_ID,
-          connection_id: 1,
-          pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
-        });
-      }
-    } catch (e) {}
-  })();
 
   for (const selector in fieldsAttributes) {
     const field = document.querySelector(selector);
@@ -4369,7 +4349,7 @@ async function returnPaypal() {
 ;
 
     const body = {
-        pageId: "Wl8UZsvp8wFE9eNEk2OqE4q0B7GV9EJORyOGDAeJGSO8Eb58gCTYf2usXub4s4xm",
+        pageId: "OIXV561Jhsai051ZYnGFwUYsl-6a8nnzSvc-dHeUk_mRev6aV3J181fh5ciZI6dz",
         action: "process",
         campaign_id: CAMPAIGN_ID,
         connection_id: 1,
